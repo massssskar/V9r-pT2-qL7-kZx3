@@ -1,17 +1,24 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Only POST allowed" });
+  console.log("Webhook route reached");
 
   const webhookURL = process.env.DISCORD_WEBHOOK_URL;
-  if (!webhookURL) return res.status(500).json({ error: "Webhook not set" });
+  console.log("Webhook URL exists:", !!webhookURL);
 
   try {
-    await fetch(webhookURL, {
+    const response = await fetch(webhookURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify({
+        content: "TESTING 123"
+      })
     });
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    const text = await response.text();
+    console.log("Discord response:", response.status, text);
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error("ERROR:", e);
+    return res.status(500).json({ error: e.message });
   }
 }
